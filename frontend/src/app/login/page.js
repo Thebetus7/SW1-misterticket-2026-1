@@ -1,0 +1,117 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import { fetchApi } from '@/lib/api';
+import { Ticket, Lock, User } from 'lucide-react';
+import Link from 'next/link';
+
+export default function LoginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchApi('/usuarios/login/', {
+        method: 'POST',
+        body: JSON.stringify({ username, password })
+      });
+      
+      // Guardado estilo SPA / Laravel Sanctum
+      Cookies.set('access_token', data.access, { expires: 1 });
+      Cookies.set('refresh_token', data.refresh, { expires: 7 });
+      
+      if(data.usuario) {
+        Cookies.set('user', JSON.stringify(data.usuario));
+      }
+
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-brand-50 p-4">
+      <div className="max-w-md w-full animate-fade-in-up">
+        
+        <div className="text-center mb-8">
+          <div className="inline-flex bg-white p-3 rounded-xl shadow-sm border border-brand-100 mb-4">
+            <Ticket className="w-10 h-10 text-accent" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-brand-900">Bienvenido de Vuelta</h2>
+          <p className="text-brand-600 mt-2">Ingresa a tu cuenta para continuar en MisterTicket</p>
+        </div>
+
+        <div className="card shadow-xl shadow-brand-200/50">
+          <form onSubmit={handleLogin} className="space-y-6">
+            
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm text-center">
+                {error === 'No active account found with the given credentials' ? 'Credenciales Inválidas' : error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-brand-700 mb-1">Nombre de Usuario</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-brand-400" />
+                </div>
+                <input
+                  type="text"
+                  required
+                  className="input-field pl-10"
+                  placeholder="ej. edberto"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-brand-700 mb-1">Contraseña</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-brand-400" />
+                </div>
+                <input
+                  type="password"
+                  required
+                  className="input-field pl-10"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full py-3 mt-4 text-lg"
+            >
+              {loading ? 'Verificando...' : 'Iniciar Sesión'}
+            </button>
+          </form>
+        </div>
+        
+        <div className="text-center mt-6">
+          <Link href="/" className="text-brand-500 hover:text-brand-700 text-sm font-medium transition-colors">
+            Volver al inicio
+          </Link>
+        </div>
+
+      </div>
+    </div>
+  );
+}
