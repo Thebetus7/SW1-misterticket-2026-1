@@ -31,7 +31,9 @@ INSTALLED_APPS = [
 
     # Local apps
     'usuarios',
-    'productos',
+    'eventos',
+    'tickets',
+    'pagos',
 ]
 
 MIDDLEWARE = [
@@ -46,7 +48,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
-AUTH_USER_MODEL = 'usuarios.Usuario' # Custom user model para manejar roles
+AUTH_USER_MODEL = 'usuarios.Usuario'  # Custom user model para manejar roles
 
 TEMPLATES = [
     {
@@ -92,6 +94,14 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# =============================================================================
+# MEDIA FILES - Para subida de archivos (fotos de artistas, etc.)
+# =============================================================================
+# MEDIA_URL: URL pública para acceder a los archivos subidos
+MEDIA_URL = '/media/'
+# MEDIA_ROOT: Directorio en el servidor donde se guardan los archivos
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Rest Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -111,4 +121,4 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True # Cambiar en producción a la URL de tu Next.js
+CORS_ALLOW_ALL_ORIGINS = True  # Cambiar en producción a la URL de tu Next.js
