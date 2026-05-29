@@ -98,6 +98,8 @@ class Evento(SoftDeleteModel):
         related_name='eventos',
         verbose_name='Organizador'
     )
+    fecha_inicio = models.DateTimeField(verbose_name='Fecha y hora de inicio', null=True, blank=True)
+    fecha_fin = models.DateTimeField(verbose_name='Fecha y hora de fin', null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

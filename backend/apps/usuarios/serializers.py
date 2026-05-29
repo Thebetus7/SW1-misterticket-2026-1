@@ -51,7 +51,7 @@ class UsuarioRegistroSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
     rol_nombre = serializers.ChoiceField(
         choices=['organizador', 'verificador', 'artista'],
-        write_only=True, required=False
+        write_only=True, required=False, allow_blank=True, allow_null=True
     )
 
     class Meta:
@@ -71,6 +71,26 @@ class UsuarioRegistroSerializer(serializers.ModelSerializer):
             try:
                 grupo = Group.objects.get(name=rol_nombre)
                 usuario.groups.add(grupo)
+                
+                # Crear el perfil correspondiente automáticamente
+                if rol_nombre == 'organizador':
+                    Organizador.objects.create(
+                        usuario=usuario,
+                        razon_social=f"Organizador {usuario.first_name} {usuario.last_name}".strip() or usuario.username,
+                        nit_rfc="000000",
+                        banco_nombre="Pendiente",
+                        cuenta_bancaria="Pendiente"
+                    )
+                elif rol_nombre == 'artista':
+                    Artista.objects.create(
+                        usuario=usuario,
+                        nombre_artistico=f"{usuario.first_name} {usuario.last_name}".strip() or usuario.username
+                    )
+                elif rol_nombre == 'verificador':
+                    Verificador.objects.create(
+                        usuario=usuario,
+                        pago=0.0
+                    )
             except Group.DoesNotExist:
                 pass
 

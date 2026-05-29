@@ -34,7 +34,7 @@ export default function Navbar() {
             {token ? (
               <>
                 <Link href="/dashboard" className="text-brand-600 hover:text-accent font-medium transition-colors">Inicio</Link>
-                <Link href="/productos" className="text-brand-600 hover:text-accent font-medium transition-colors">Productos</Link>
+                <Link href="/eventos" className="text-brand-600 hover:text-accent font-medium transition-colors">Eventos</Link>
                 <div className="flex items-center gap-3 border-l border-brand-200 pl-6 ml-2">
                   <span className="text-brand-800 font-semibold">{user?.username || 'Usuario'}</span>
                   <button onClick={handleLogout} className="text-brand-500 hover:text-red-500 transition-colors" title="Cerrar Sesión">

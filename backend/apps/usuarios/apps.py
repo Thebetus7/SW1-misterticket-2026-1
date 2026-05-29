@@ -80,8 +80,8 @@ def crear_roles_y_permisos(sender, **kwargs):
             permisos['ver_reportes'],
         ])
 
-        print("✅ Roles y permisos creados/actualizados correctamente.")
+        print("[OK] Roles y permisos creados/actualizados correctamente.")
 
     except Exception as e:
         # En la primera migración puede que los modelos aún no existan
-        print(f"⚠️  No se pudieron crear roles/permisos (normal en primera migración): {e}")
+        print(f"[WARNING] No se pudieron crear roles/permisos (normal en primera migración): {e}")

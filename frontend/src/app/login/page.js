@@ -106,9 +106,17 @@ export default function LoginPage() {
         </div>
         
         <div className="text-center mt-6">
-          <Link href="/" className="text-brand-500 hover:text-brand-700 text-sm font-medium transition-colors">
-            Volver al inicio
-          </Link>
+          <p className="text-brand-600 text-sm">
+            ¿No tienes una cuenta?{' '}
+            <Link href="/register" className="text-accent font-semibold hover:underline">
+              Regístrate aquí
+            </Link>
+          </p>
+          <div className="mt-4">
+            <Link href="/" className="text-brand-500 hover:text-brand-700 text-sm font-medium transition-colors">
+              Volver al inicio
+            </Link>
+          </div>
         </div>
 
       </div>

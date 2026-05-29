@@ -42,9 +42,9 @@ export default function Home() {
           <Link href="/login" className="btn-primary flex items-center gap-2 text-lg">
             Ingresar a mi cuenta
           </Link>
-          <a href="#" className="px-6 py-2 rounded-lg font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-200 transition-colors">
-            Ver Eventos
-          </a>
+          <Link href="/register" className="px-6 py-2 rounded-lg font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-200 transition-colors">
+            Crear cuenta nueva
+          </Link>
         </div>
       </div>
     </main>
