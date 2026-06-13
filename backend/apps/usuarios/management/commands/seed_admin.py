@@ -29,7 +29,7 @@ class Command(BaseCommand):
             ))
 
     def _create_user_with_role(self, User, username, email, password, role_name):
-        """Crea un usuario normal y le asigna un rol (Group)."""
+        """Crea un usuario normal y le asigna un rol (Group) y perfil correspondiente."""
         if User.objects.filter(username=username).exists():
             self.stdout.write(self.style.WARNING(f"El usuario '{username}' ya existe."))
             user = User.objects.get(username=username)
@@ -60,6 +60,29 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(
                 f"  ✗ El rol '{role_name}' no existe. Ejecuta 'migrate' primero."
             ))
+            return
+
+        # Crear perfil según el rol si no existe
+        if role_name == 'artista':
+            from usuarios.models import Artista
+            artista, created = Artista.objects.get_or_create(
+                usuario=user,
+                defaults={'nombre_artistico': f"Artista {username.capitalize()}"}
+            )
+            if created:
+                self.stdout.write(self.style.SUCCESS(
+                    f"  → Perfil de Artista '{artista.nombre_artistico}' creado para '{username}'."
+                ))
+        elif role_name == 'verificador':
+            from usuarios.models import Verificador
+            verificador, created = Verificador.objects.get_or_create(
+                usuario=user,
+                defaults={'pago': 50.00, 'estado': 'activo'}
+            )
+            if created:
+                self.stdout.write(self.style.SUCCESS(
+                    f"  → Perfil de Verificador creado para '{username}' (pago: 50.00, estado: activo)."
+                ))
 
     def handle(self, *args, **kwargs):
         User = get_user_model()
