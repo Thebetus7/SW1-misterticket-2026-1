@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'eventos',
     'tickets',
     'pagos',
+    'musica',
 ]
 
 MIDDLEWARE = [
