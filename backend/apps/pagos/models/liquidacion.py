@@ -1,17 +1,7 @@
-"""
-=============================================================================
- APP: pagos
- MODELOS: Liquidacion
-=============================================================================
-"""
-
 from django.db import models
 from usuarios.models import SoftDeleteModel
 
 
-# =============================================================================
-# MODELO: Liquidacion
-# =============================================================================
 class Liquidacion(SoftDeleteModel):
     """
     Liquidación de pagos al organizador después de un evento.

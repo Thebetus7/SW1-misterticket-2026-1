@@ -1,28 +1,7 @@
 from rest_framework import serializers
-from .models import Factura, Ticket
+from ..models import Ticket
 
 
-# =============================================================================
-# SERIALIZER: Factura
-# =============================================================================
-class FacturaSerializer(serializers.ModelSerializer):
-    cliente_username = serializers.CharField(
-        source='cliente.username', read_only=True
-    )
-
-    class Meta:
-        model = Factura
-        fields = (
-            'id', 'precio', 'estado_pago',
-            'cliente', 'cliente_username',
-            'created_at', 'updated_at',
-        )
-        read_only_fields = ('id', 'created_at', 'updated_at')
-
-
-# =============================================================================
-# SERIALIZER: Ticket
-# =============================================================================
 class TicketSerializer(serializers.ModelSerializer):
     zona_nombre = serializers.CharField(source='zona.nombre', read_only=True)
     factura_estado = serializers.CharField(

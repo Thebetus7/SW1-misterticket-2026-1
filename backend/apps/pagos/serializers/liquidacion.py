@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Liquidacion
+from ..models import Liquidacion
 
 
 class LiquidacionSerializer(serializers.ModelSerializer):

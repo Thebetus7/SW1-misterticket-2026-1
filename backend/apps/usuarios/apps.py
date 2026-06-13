@@ -44,10 +44,11 @@ def crear_roles_y_permisos(sender, **kwargs):
         from usuarios.models import Usuario
         ct = ContentType.objects.get_for_model(Usuario)
 
-        # ─── CREAR LOS 3 ROLES (Groups) ───
+        # ─── CREAR LOS 4 ROLES (Groups) ───
         rol_organizador, _ = Group.objects.get_or_create(name='organizador')
         rol_verificador, _ = Group.objects.get_or_create(name='verificador')
         rol_artista, _ = Group.objects.get_or_create(name='artista')
+        rol_fan, _ = Group.objects.get_or_create(name='fan')
 
         # ─── OBTENER LOS 4 PERMISOS CUSTOM ───
         # Estos permisos se definen en Meta.permissions del modelo Usuario

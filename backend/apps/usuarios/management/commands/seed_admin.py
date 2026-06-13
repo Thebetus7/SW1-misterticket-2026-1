@@ -1,0 +1,94 @@
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+import os
+
+
+class Command(BaseCommand):
+    help = 'Crea el superusuario admin y usuarios de prueba con roles (fan, artista, verificador).'
+
+    def _create_or_update_superuser(self, User, username, email, password):
+        """Crea o actualiza el superusuario admin."""
+        if User.objects.filter(username=username).exists():
+            self.stdout.write(self.style.WARNING(f"El usuario '{username}' ya existe."))
+            user = User.objects.get(username=username)
+            if not user.is_superuser:
+                user.is_superuser = True
+                user.is_staff = True
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f"El usuario '{username}' ahora es superusuario."))
+        else:
+            self.stdout.write(self.style.NOTICE(f"Creando superusuario '{username}'..."))
+            User.objects.create_superuser(
+                username=username,
+                email=email,
+                password=password
+            )
+            self.stdout.write(self.style.SUCCESS(
+                f"Superusuario '{username}' creado exitosamente con contraseña '{password}'."
+            ))
+
+    def _create_user_with_role(self, User, username, email, password, role_name):
+        """Crea un usuario normal y le asigna un rol (Group)."""
+        if User.objects.filter(username=username).exists():
+            self.stdout.write(self.style.WARNING(f"El usuario '{username}' ya existe."))
+            user = User.objects.get(username=username)
+        else:
+            self.stdout.write(self.style.NOTICE(f"Creando usuario '{username}'..."))
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            self.stdout.write(self.style.SUCCESS(
+                f"Usuario '{username}' creado con contraseña '{password}'."
+            ))
+
+        # Asignar rol
+        try:
+            grupo = Group.objects.get(name=role_name)
+            if not user.groups.filter(name=role_name).exists():
+                user.groups.add(grupo)
+                self.stdout.write(self.style.SUCCESS(
+                    f"  → Rol '{role_name}' asignado a '{username}'."
+                ))
+            else:
+                self.stdout.write(self.style.WARNING(
+                    f"  → '{username}' ya tiene el rol '{role_name}'."
+                ))
+        except Group.DoesNotExist:
+            self.stdout.write(self.style.ERROR(
+                f"  ✗ El rol '{role_name}' no existe. Ejecuta 'migrate' primero."
+            ))
+
+    def handle(self, *args, **kwargs):
+        User = get_user_model()
+
+        # ─── 1. SUPERUSUARIO ADMIN ───
+        self.stdout.write(self.style.HTTP_INFO('\n══════ CREANDO SUPERUSUARIO ══════'))
+        admin_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+        admin_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@misterticket.com')
+        admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin123')
+        self._create_or_update_superuser(User, admin_username, admin_email, admin_password)
+
+        # ─── 2. USUARIOS DE PRUEBA CON ROLES ───
+        self.stdout.write(self.style.HTTP_INFO('\n══════ CREANDO USUARIOS DE PRUEBA ══════'))
+
+        usuarios_prueba = [
+            # (username, email, password, rol)
+            ('fan1', 'fan1@misterticket.com', 'fan12345', 'fan'),
+            ('fan2', 'fan2@misterticket.com', 'fan12345', 'fan'),
+            ('artista1', 'artista1@misterticket.com', 'artista12345', 'artista'),
+            ('artista2', 'artista2@misterticket.com', 'artista12345', 'artista'),
+            ('verificador1', 'verificador1@misterticket.com', 'verificador12345', 'verificador'),
+            ('verificador2', 'verificador2@misterticket.com', 'verificador12345', 'verificador'),
+        ]
+
+        for username, email, password, role in usuarios_prueba:
+            self._stdout_separator()
+            self._create_user_with_role(User, username, email, password, role)
+
+        self.stdout.write(self.style.HTTP_INFO('\n══════ SEED COMPLETADO ══════\n'))
+
+    def _stdout_separator(self):
+        self.stdout.write('─' * 40)

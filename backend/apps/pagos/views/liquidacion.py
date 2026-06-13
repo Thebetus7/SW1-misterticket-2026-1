@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 
-from .models import Liquidacion
-from .serializers import LiquidacionSerializer
+from ..models import Liquidacion
+from ..serializers import LiquidacionSerializer
 
 
 class LiquidacionViewSet(viewsets.ModelViewSet):

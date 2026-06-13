@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Navbar from '@/components/Navbar';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { User, Settings, ShieldAlert, Activity } from 'lucide-react';
@@ -27,7 +26,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-brand-50">
-      <Navbar />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
         
