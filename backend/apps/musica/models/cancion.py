@@ -66,8 +66,15 @@ class Cancion(models.Model):
                 
                 # Intentar abrir el archivo de forma que mutagen lo lea correctamente
                 try:
-                    # En local con almacenamiento en disco, podemos usar self.archivo.path
-                    if hasattr(self.archivo, 'path') and os.path.exists(self.archivo.path):
+                    # En local con almacenamiento en disco, intentamos usar self.archivo.path
+                    path_exists = False
+                    try:
+                        if hasattr(self.archivo, 'path') and self.archivo.path:
+                            path_exists = os.path.exists(self.archivo.path)
+                    except (NotImplementedError, AttributeError):
+                        path_exists = False
+
+                    if path_exists:
                         audio = MutagenFile(self.archivo.path)
                         if audio is not None and audio.info is not None:
                             duracion_segundos = audio.info.length
