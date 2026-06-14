@@ -157,3 +157,12 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         
         serializer = EventoFeedSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], url_path='zonas-disponibles', permission_classes=[permissions.AllowAny])
+    def zonas_disponibles(self, request, pk=None):
+        from ..serializers.zona_asiento import ZonaSerializer
+        evento = self.get_object()
+        zonas = Zona.objects.filter(evento=evento)
+        serializer = ZonaSerializer(zonas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

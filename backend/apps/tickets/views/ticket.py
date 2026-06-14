@@ -1,7 +1,9 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from ..models import Ticket
-from ..serializers import TicketSerializer
+from ..serializers import TicketSerializer, MisTicketsSerializer
 from .mixins import SoftDeleteMixin
 
 
@@ -14,7 +16,7 @@ class TicketViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     PATCH  /api/tickets/tickets/{id}/    → Actualizar parcial (ej: estado)
     DELETE /api/tickets/tickets/{id}/    → Soft delete
     """
-    queryset = Ticket.objects.select_related('zona', 'factura', 'asiento').all()
+    queryset = Ticket.objects.select_related('zona__evento', 'factura', 'asiento').all()
     serializer_class = TicketSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -27,3 +29,17 @@ class TicketViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         if zona_id:
             qs = qs.filter(zona_id=zona_id)
         return qs
+
+    @action(detail=False, url_path='mis-tickets', methods=['get'])
+    def mis_tickets(self, request):
+        # Filtrar por tickets comprados por el usuario autenticado (cliente de la factura)
+        # Prefetch de zona y evento para optimizar consultas
+        tickets = Ticket.objects.filter(
+            factura__cliente=request.user
+        ).select_related(
+            'zona__evento', 'asiento'
+        ).order_by('-created_at')
+        
+        serializer = MisTicketsSerializer(tickets, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

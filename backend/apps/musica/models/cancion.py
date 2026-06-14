@@ -1,6 +1,6 @@
 import os
 from django.db import models
-from usuarios.models import Artista
+from usuarios.models import Artista, SoftDeleteModel
 from mutagen import File as MutagenFile
 
 def cancion_archivo_upload_path(instance, filename):
@@ -11,7 +11,7 @@ def cancion_archivo_upload_path(instance, filename):
     # Guardar bajo artistas/{artista_id}/musica/
     return os.path.join('artistas', str(instance.artista.pk), 'musica', new_filename)
 
-class Cancion(models.Model):
+class Cancion(SoftDeleteModel):
     nombre = models.CharField(max_length=255, verbose_name='Nombre de la canción')
     detalle = models.TextField(blank=True, null=True, verbose_name='Detalle o descripción')
     archivo = models.FileField(

@@ -1,11 +1,12 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
+from core.mixins import SoftDeleteMixin
 
 from ..models import Liquidacion
 from ..serializers import LiquidacionSerializer
 
 
-class LiquidacionViewSet(viewsets.ModelViewSet):
+class LiquidacionViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     CRUD de Liquidaciones.
     GET    /api/pagos/liquidaciones/         → Listar
@@ -18,11 +19,3 @@ class LiquidacionViewSet(viewsets.ModelViewSet):
     queryset = Liquidacion.objects.select_related('evento').all()
     serializer_class = LiquidacionSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete()  # Soft delete
-        return Response(
-            {'detail': 'Liquidación eliminada (soft delete).'},
-            status=status.HTTP_200_OK
-        )

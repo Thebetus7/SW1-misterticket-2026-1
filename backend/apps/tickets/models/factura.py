@@ -22,6 +22,12 @@ class Factura(SoftDeleteModel):
         related_name='facturas',
         verbose_name='Cliente'
     )
+    stripe_payment_intent_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        verbose_name='Stripe PaymentIntent ID',
+        help_text='ID del PaymentIntent de Stripe para trazabilidad'
+    )
+
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

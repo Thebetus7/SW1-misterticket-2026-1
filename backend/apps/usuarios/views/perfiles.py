@@ -1,11 +1,12 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
+from core.mixins import SoftDeleteMixin
 
 from ..models import Artista, Promotor, Verificador, Vendedor
 from ..serializers import ArtistaSerializer, PromotorSerializer, VerificadorSerializer, VendedorSerializer, VendedorCrearSerializer
 
 
-class ArtistaViewSet(viewsets.ModelViewSet):
+class ArtistaViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     CRUD completo de Artistas. Soporta subida de foto via multipart/form-data.
     GET    /api/artistas/          → Listar
@@ -19,16 +20,8 @@ class ArtistaViewSet(viewsets.ModelViewSet):
     serializer_class = ArtistaSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete()
-        return Response(
-            {'detail': 'Artista eliminado correctamente (soft delete).'},
-            status=status.HTTP_200_OK
-        )
 
-
-class PromotorViewSet(viewsets.ModelViewSet):
+class PromotorViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     CRUD completo de Promotores.
     GET    /api/promotores/          → Listar
@@ -42,16 +35,8 @@ class PromotorViewSet(viewsets.ModelViewSet):
     serializer_class = PromotorSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete()
-        return Response(
-            {'detail': 'Promotor eliminado correctamente (soft delete).'},
-            status=status.HTTP_200_OK
-        )
 
-
-class VerificadorViewSet(viewsets.ModelViewSet):
+class VerificadorViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     CRUD completo de Verificadores.
     GET    /api/verificadores/          → Listar
@@ -64,14 +49,6 @@ class VerificadorViewSet(viewsets.ModelViewSet):
     queryset = Verificador.objects.all()
     serializer_class = VerificadorSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete()
-        return Response(
-            {'detail': 'Verificador eliminado correctamente (soft delete).'},
-            status=status.HTTP_200_OK
-        )
 
 
 class VendedorViewSet(viewsets.ModelViewSet):

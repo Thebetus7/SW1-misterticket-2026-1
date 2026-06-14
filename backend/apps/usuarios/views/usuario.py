@@ -2,13 +2,14 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from core.mixins import SoftDeleteMixin
 
 from ..serializers import UsuarioSerializer, UsuarioRegistroSerializer
 
 Usuario = get_user_model()
 
 
-class UsuarioViewSet(viewsets.ModelViewSet):
+class UsuarioViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     CRUD completo de Usuarios.
     GET    /api/usuarios/usuarios/       → Listar todos
@@ -27,14 +28,6 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return UsuarioRegistroSerializer
         return UsuarioSerializer
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete()  # Soft delete
-        return Response(
-            {'detail': 'Usuario eliminado correctamente (soft delete).'},
-            status=status.HTTP_200_OK
-        )
 
     @action(detail=True, methods=['get'], url_path='roles')
     def roles(self, request, pk=None):

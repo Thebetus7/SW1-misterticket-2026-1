@@ -32,3 +32,29 @@ class TicketSerializer(serializers.ModelSerializer):
                 'columna': obj.asiento.columna,
             }
         return None
+
+
+class MisTicketsSerializer(serializers.ModelSerializer):
+    zona_nombre = serializers.CharField(source='zona.nombre', read_only=True)
+    evento_nombre = serializers.CharField(source='zona.evento.nombre', read_only=True)
+    evento_fecha = serializers.DateTimeField(source='zona.evento.fecha_inicio', read_only=True)
+    asiento_detalle = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ticket
+        fields = (
+            'id', 'codigo_qr', 'estado',
+            'zona_nombre', 'evento_nombre', 'evento_fecha',
+            'asiento_detalle', 'created_at',
+        )
+        read_only_fields = ('id', 'created_at')
+
+    def get_asiento_detalle(self, obj):
+        if obj.asiento:
+            return {
+                'id': obj.asiento.id,
+                'fila': obj.asiento.fila,
+                'columna': obj.asiento.columna,
+            }
+        return None
+

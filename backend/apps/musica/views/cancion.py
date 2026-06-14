@@ -1,10 +1,11 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from core.mixins import SoftDeleteMixin
 from ..models import Cancion
 from ..serializers import CancionSerializer
 
-class CancionViewSet(viewsets.ModelViewSet):
+class CancionViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     CRUD completo de Canciones del Artista autenticado.
     GET    /api/musica/canciones/          → Listar canciones del artista autenticado
