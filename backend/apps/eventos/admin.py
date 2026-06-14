@@ -36,7 +36,7 @@ class PresentacionInline(admin.TabularInline):
 
 @admin.register(Evento)
 class EventoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'estado', 'lugar', 'organizador', 'created_at', 'is_deleted')
+    list_display = ('id', 'nombre', 'estado', 'lugar', 'promotor', 'created_at', 'is_deleted')
     search_fields = ('nombre',)
     list_filter = ('estado', 'deleted_at')
     inlines = [ZonaInline, PresentacionInline]

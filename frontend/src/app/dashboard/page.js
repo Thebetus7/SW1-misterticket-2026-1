@@ -1,31 +1,26 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
 import { User, Settings, ShieldAlert, Activity } from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = Cookies.get('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
     const userString = Cookies.get('user');
     if (userString) {
       try {
         setUser(JSON.parse(userString));
       } catch(e){}
     }
-  }, [router]);
+  }, []);
 
-  if (!user) return <div className="min-h-screen bg-brand-50 flex items-center justify-center">Cargando...</div>;
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-brand-50">
+    <AuthGuard allowedRoles={['admin']}>
+      <div className="min-h-screen bg-brand-50">
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
         
@@ -90,5 +85,6 @@ export default function DashboardPage() {
 
       </main>
     </div>
+    </AuthGuard>
   );
 }

@@ -18,7 +18,7 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     PATCH  /api/eventos/eventos/{id}/    → Actualizar parcial
     DELETE /api/eventos/eventos/{id}/    → Soft delete
     """
-    queryset = Evento.objects.select_related('lugar', 'organizador').prefetch_related('zonas')
+    queryset = Evento.objects.select_related('lugar', 'promotor').prefetch_related('zonas')
     serializer_class = EventoSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -26,9 +26,9 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         qs = super().get_queryset()
         user = self.request.user
         
-        # Filtro por organizador logueado
-        if hasattr(user, 'perfil_organizador'):
-            qs = qs.filter(organizador=user.perfil_organizador)
+        # Filtro por promotor logueado
+        if hasattr(user, 'perfil_promotor'):
+            qs = qs.filter(promotor=user.perfil_promotor)
             
         # Filtros por fecha
         fecha_desde = self.request.query_params.get('fecha_desde')
@@ -51,7 +51,13 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         user = self.request.user
-        organizador = user.perfil_organizador if hasattr(user, 'perfil_organizador') else None
+        promotor = getattr(user, 'perfil_promotor', None)
+
+        if not promotor:
+            return Response(
+                {"detail": "El usuario autenticado no cuenta con un perfil de promotor y no puede crear eventos. Por favor, inicie sesión como promotor (ej. promotor1)."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         evento = Evento.objects.create(
             nombre=serializer.validated_data['nombre'],
@@ -59,7 +65,7 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
             lugar=serializer.validated_data['lugar'],
             fecha_inicio=serializer.validated_data['fecha_inicio'],
             fecha_fin=serializer.validated_data['fecha_fin'],
-            organizador=organizador
+            promotor=promotor
         )
 
         zonas_data = serializer.validated_data['zonas']
@@ -136,3 +142,18 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         self._crear_zonas_y_asientos(evento, [serializer.validated_data])
         
         return Response({'detail': 'Zona y asientos agregados correctamente.'}, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], url_path='feed', permission_classes=[permissions.AllowAny])
+    def feed(self, request):
+        from ..serializers.evento import EventoFeedSerializer
+        
+        # Prefetch presentaciones y artistas para optimizar queries
+        queryset = Evento.objects.filter(estado='publicado').select_related(
+            'lugar', 'promotor'
+        ).prefetch_related(
+            'presentaciones__artista__generos_musicales',
+            'presentaciones__artista__departamento_origen'
+        ).order_by('-fecha_inicio')
+        
+        serializer = EventoFeedSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

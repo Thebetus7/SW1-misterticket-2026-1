@@ -45,10 +45,11 @@ def crear_roles_y_permisos(sender, **kwargs):
         ct = ContentType.objects.get_for_model(Usuario)
 
         # ─── CREAR LOS 4 ROLES (Groups) ───
-        rol_organizador, _ = Group.objects.get_or_create(name='organizador')
+        rol_promotor, _ = Group.objects.get_or_create(name='promotor')
         rol_verificador, _ = Group.objects.get_or_create(name='verificador')
         rol_artista, _ = Group.objects.get_or_create(name='artista')
         rol_fan, _ = Group.objects.get_or_create(name='fan')
+        rol_vendedor, _ = Group.objects.get_or_create(name='vendedor')
 
         # ─── OBTENER LOS 4 PERMISOS CUSTOM ───
         # Estos permisos se definen en Meta.permissions del modelo Usuario
@@ -64,8 +65,8 @@ def crear_roles_y_permisos(sender, **kwargs):
                 return
 
         # ─── ASIGNAR PERMISOS A CADA ROL ───
-        # Organizador: puede gestionar eventos y ver reportes
-        rol_organizador.permissions.set([
+        # Promotor: puede gestionar eventos y ver reportes
+        rol_promotor.permissions.set([
             permisos['gestionar_eventos'],
             permisos['ver_reportes'],
         ])

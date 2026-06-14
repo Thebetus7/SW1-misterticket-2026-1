@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { fetchApi } from '@/lib/api';
@@ -13,6 +13,24 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const token = Cookies.get('access_token');
+    const userString = Cookies.get('user');
+
+    if (token && userString) {
+      try {
+        const user = JSON.parse(userString);
+        const roles = user.roles || [];
+        const isAdmin = roles.includes('admin') || user.is_superuser;
+        if (isAdmin) {
+          router.replace('/dashboard');
+        } else if (roles.includes('promotor')) {
+          router.replace('/eventos');
+        }
+      } catch (e) {}
+    }
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,9 +48,16 @@ export default function LoginPage() {
       
       if(data.usuario) {
         Cookies.set('user', JSON.stringify(data.usuario));
+        const roles = data.usuario.roles || [];
+        const isAdmin = roles.includes('admin') || data.usuario.is_superuser;
+        if (isAdmin) {
+          router.replace('/dashboard');
+        } else {
+          router.replace('/eventos');
+        }
+      } else {
+        router.replace('/eventos');
       }
-
-      router.push('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {

@@ -3,9 +3,9 @@ from .base import SoftDeleteModel
 from .usuario import Usuario
 
 
-class Organizador(SoftDeleteModel):
+class Promotor(SoftDeleteModel):
     """
-    Perfil de organizador de eventos.
+    Perfil de promotor de eventos (anteriormente organizador).
     Contiene datos fiscales y bancarios para liquidaciones.
     """
     razon_social = models.CharField(max_length=255, verbose_name='Razón social')
@@ -16,7 +16,7 @@ class Organizador(SoftDeleteModel):
     usuario = models.OneToOneField(
         Usuario,
         on_delete=models.CASCADE,
-        related_name='perfil_organizador',
+        related_name='perfil_promotor',
         verbose_name='Usuario'
     )
 
@@ -24,9 +24,9 @@ class Organizador(SoftDeleteModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'organizadores'
-        verbose_name = 'Organizador'
-        verbose_name_plural = 'Organizadores'
+        db_table = 'promotores'
+        verbose_name = 'Promotor'
+        verbose_name_plural = 'Promotores'
 
     def __str__(self):
         return self.razon_social

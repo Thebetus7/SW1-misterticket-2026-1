@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 
-from ..models import Artista, Organizador, Verificador
-from ..serializers import ArtistaSerializer, OrganizadorSerializer, VerificadorSerializer
+from ..models import Artista, Promotor, Verificador, Vendedor
+from ..serializers import ArtistaSerializer, PromotorSerializer, VerificadorSerializer, VendedorSerializer, VendedorCrearSerializer
 
 
 class ArtistaViewSet(viewsets.ModelViewSet):
@@ -28,25 +28,25 @@ class ArtistaViewSet(viewsets.ModelViewSet):
         )
 
 
-class OrganizadorViewSet(viewsets.ModelViewSet):
+class PromotorViewSet(viewsets.ModelViewSet):
     """
-    CRUD completo de Organizadores.
-    GET    /api/organizadores/          → Listar
-    POST   /api/organizadores/          → Crear
-    GET    /api/organizadores/{id}/     → Detalle
-    PUT    /api/organizadores/{id}/     → Actualizar
-    PATCH  /api/organizadores/{id}/     → Actualizar parcial
-    DELETE /api/organizadores/{id}/     → Soft delete
+    CRUD completo de Promotores.
+    GET    /api/promotores/          → Listar
+    POST   /api/promotores/          → Crear
+    GET    /api/promotores/{id}/     → Detalle
+    PUT    /api/promotores/{id}/     → Actualizar
+    PATCH  /api/promotores/{id}/     → Actualizar parcial
+    DELETE /api/promotores/{id}/     → Soft delete
     """
-    queryset = Organizador.objects.all()
-    serializer_class = OrganizadorSerializer
+    queryset = Promotor.objects.all()
+    serializer_class = PromotorSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.delete()
         return Response(
-            {'detail': 'Organizador eliminado correctamente (soft delete).'},
+            {'detail': 'Promotor eliminado correctamente (soft delete).'},
             status=status.HTTP_200_OK
         )
 
@@ -72,3 +72,44 @@ class VerificadorViewSet(viewsets.ModelViewSet):
             {'detail': 'Verificador eliminado correctamente (soft delete).'},
             status=status.HTTP_200_OK
         )
+
+
+class VendedorViewSet(viewsets.ModelViewSet):
+    """
+    CRUD completo de Vendedores.
+    GET    /api/vendedores/          → Listar
+    POST   /api/vendedores/          → Crear
+    GET    /api/vendedores/{id}/     → Detalle
+    PUT    /api/vendedores/{id}/     → Actualizar
+    PATCH  /api/vendedores/{id}/     → Actualizar parcial
+    DELETE /api/vendedores/{id}/     → Soft delete
+    """
+    queryset = Vendedor.objects.select_related('usuario', 'promotor').all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        if hasattr(user, 'perfil_promotor'):
+            return qs.filter(promotor=user.perfil_promotor)
+        # Si no es admin ni promotor, no ve nada o ve vacío
+        return qs.none()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return VendedorCrearSerializer
+        return VendedorSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Soft delete de la cuenta de usuario asociada
+        if instance.usuario:
+            instance.usuario.delete()
+        instance.delete()
+        return Response(
+            {'detail': 'Vendedor eliminado correctamente (soft delete).'},
+            status=status.HTTP_200_OK
+        )
+

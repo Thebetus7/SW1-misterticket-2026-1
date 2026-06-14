@@ -5,8 +5,8 @@ from .zona_asiento import ZonaSerializer
 
 class EventoSerializer(serializers.ModelSerializer):
     lugar_nombre = serializers.CharField(source='lugar.nombre', read_only=True)
-    organizador_razon = serializers.CharField(
-        source='organizador.razon_social', read_only=True
+    promotor_razon = serializers.CharField(
+        source='promotor.razon_social', read_only=True
     )
     zonas = ZonaSerializer(many=True, read_only=True)
 
@@ -15,12 +15,12 @@ class EventoSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'nombre', 'estado',
             'lugar', 'lugar_nombre',
-            'organizador', 'organizador_razon',
+            'promotor', 'promotor_razon',
             'zonas',
             'fecha_inicio', 'fecha_fin',
             'created_at', 'updated_at',
         )
-        read_only_fields = ('id', 'created_at', 'updated_at', 'organizador')
+        read_only_fields = ('id', 'created_at', 'updated_at', 'promotor')
 
 
 class ZonaCrearSerializer(serializers.Serializer):
@@ -50,3 +50,45 @@ class EventoCrearSerializer(serializers.ModelSerializer):
                          f"la capacidad del lugar ({lugar.capacidad_total})."
             })
         return data
+
+
+# --- SERIALIZERS PARA EL FEED (MÓVIL) ---
+from ..models import PresentacionEvento
+
+class ArtistaFeedSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nombre_artistico = serializers.CharField()
+    biografia = serializers.CharField()
+    foto_url = serializers.CharField()
+    departamento_origen_nombre = serializers.CharField(source='departamento_origen.nombre', default=None, read_only=True)
+    popularidad = serializers.IntegerField()
+    generos_musicales_nombres = serializers.SerializerMethodField()
+
+    def get_generos_musicales_nombres(self, obj):
+        return [g.nombre for g in obj.generos_musicales.all()]
+
+
+class PresentacionFeedSerializer(serializers.ModelSerializer):
+    artista = ArtistaFeedSerializer(read_only=True)
+
+    class Meta:
+        model = PresentacionEvento
+        fields = ('id', 'artista', 'orden_aparicion', 'tiempo_inicio')
+
+
+class EventoFeedSerializer(serializers.ModelSerializer):
+    lugar_nombre = serializers.CharField(source='lugar.nombre', read_only=True)
+    promotor_razon = serializers.CharField(source='promotor.razon_social', read_only=True)
+    presentaciones = PresentacionFeedSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Evento
+        fields = (
+            'id', 'nombre', 'estado',
+            'lugar', 'lugar_nombre',
+            'promotor', 'promotor_razon',
+            'presentaciones',
+            'fecha_inicio', 'fecha_fin',
+            'created_at', 'updated_at',
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')

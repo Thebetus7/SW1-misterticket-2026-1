@@ -3,7 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from ..models import Artista, Organizador, Verificador
+from ..models import Artista, Promotor, Verificador
 from .persona import PersonaSerializer
 
 Usuario = get_user_model()
@@ -21,9 +21,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
             'first_name', 'last_name',
             'persona', 'roles',
             'foto', 'foto_url',
-            'is_active', 'created_at', 'updated_at',
+            'is_active', 'is_superuser', 'is_staff', 'created_at', 'updated_at',
         )
-        read_only_fields = ('id', 'created_at', 'updated_at', 'roles')
+        read_only_fields = ('id', 'created_at', 'updated_at', 'roles', 'is_superuser', 'is_staff')
 
     def get_roles(self, obj):
         return obj.get_roles()
@@ -44,11 +44,11 @@ class UsuarioRegistroSerializer(serializers.ModelSerializer):
     """
     Serializer para crear usuarios nuevos.
     Acepta password en texto plano y lo hashea automáticamente.
-    Se puede pasar rol_nombre para asignarlo al usuario (ej: 'organizador').
+    Se puede pasar rol_nombre para asignarlo al usuario (ej: 'promotor').
     """
     password = serializers.CharField(write_only=True, min_length=6)
     rol_nombre = serializers.ChoiceField(
-        choices=['organizador', 'verificador', 'artista'],
+        choices=['promotor', 'verificador', 'artista'],
         write_only=True, required=False, allow_blank=True, allow_null=True
     )
 
@@ -71,10 +71,10 @@ class UsuarioRegistroSerializer(serializers.ModelSerializer):
                 usuario.groups.add(grupo)
 
                 # Crear el perfil correspondiente automáticamente
-                if rol_nombre == 'organizador':
-                    Organizador.objects.create(
+                if rol_nombre == 'promotor':
+                    Promotor.objects.create(
                         usuario=usuario,
-                        razon_social=f"Organizador {usuario.first_name} {usuario.last_name}".strip() or usuario.username,
+                        razon_social=f"Promotor {usuario.first_name} {usuario.last_name}".strip() or usuario.username,
                         nit_rfc="000000",
                         banco_nombre="Pendiente",
                         cuenta_bancaria="Pendiente"

@@ -1,5 +1,6 @@
 import os
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from .base import SoftDeleteModel
 from .usuario import Usuario
 
@@ -41,6 +42,21 @@ class Artista(SoftDeleteModel):
         related_name='artistas',
         verbose_name='Géneros musicales',
         db_table='artista_genero_musical'
+    )
+
+    departamento_origen = models.ForeignKey(
+        'eventos.Departamento',
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name='artistas_origen',
+        verbose_name='Departamento de origen'
+    )
+
+    popularidad = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name='Popularidad',
+        help_text='Popularidad del artista de 0 a 100'
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

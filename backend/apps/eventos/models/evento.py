@@ -17,11 +17,11 @@ class Evento(SoftDeleteModel):
         related_name='eventos',
         verbose_name='Lugar'
     )
-    organizador = models.ForeignKey(
-        'usuarios.Organizador',
+    promotor = models.ForeignKey(
+        'usuarios.Promotor',
         on_delete=models.PROTECT,
         related_name='eventos',
-        verbose_name='Organizador'
+        verbose_name='Promotor'
     )
     fecha_inicio = models.DateTimeField(verbose_name='Fecha y hora de inicio', null=True, blank=True)
     fecha_fin = models.DateTimeField(verbose_name='Fecha y hora de fin', null=True, blank=True)

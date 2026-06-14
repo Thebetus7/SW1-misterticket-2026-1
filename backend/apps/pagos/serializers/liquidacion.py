@@ -11,7 +11,7 @@ class LiquidacionSerializer(serializers.ModelSerializer):
             'id',
             'monto_total_ventas',
             'monto_comision_plataforma',
-            'monto_pago_organizador',
+            'monto_pago_promotor',
             'referencia_bancaria',
             'estado',
             'evento', 'evento_nombre',

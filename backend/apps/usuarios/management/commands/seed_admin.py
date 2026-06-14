@@ -50,15 +50,15 @@ class Command(BaseCommand):
             if not user.groups.filter(name=role_name).exists():
                 user.groups.add(grupo)
                 self.stdout.write(self.style.SUCCESS(
-                    f"  → Rol '{role_name}' asignado a '{username}'."
+                    f"  -> Rol '{role_name}' asignado a '{username}'."
                 ))
             else:
                 self.stdout.write(self.style.WARNING(
-                    f"  → '{username}' ya tiene el rol '{role_name}'."
+                    f"  -> '{username}' ya tiene el rol '{role_name}'."
                 ))
         except Group.DoesNotExist:
             self.stdout.write(self.style.ERROR(
-                f"  ✗ El rol '{role_name}' no existe. Ejecuta 'migrate' primero."
+                f"  [x] El rol '{role_name}' no existe. Ejecuta 'migrate' primero."
             ))
             return
 
@@ -71,7 +71,7 @@ class Command(BaseCommand):
             )
             if created:
                 self.stdout.write(self.style.SUCCESS(
-                    f"  → Perfil de Artista '{artista.nombre_artistico}' creado para '{username}'."
+                    f"  -> Perfil de Artista '{artista.nombre_artistico}' creado para '{username}'."
                 ))
         elif role_name == 'verificador':
             from usuarios.models import Verificador
@@ -81,21 +81,36 @@ class Command(BaseCommand):
             )
             if created:
                 self.stdout.write(self.style.SUCCESS(
-                    f"  → Perfil de Verificador creado para '{username}' (pago: 50.00, estado: activo)."
+                    f"  -> Perfil de Verificador creado para '{username}' (pago: 50.00, estado: activo)."
+                ))
+        elif role_name == 'promotor':
+            from usuarios.models import Promotor
+            promotor, created = Promotor.objects.get_or_create(
+                usuario=user,
+                defaults={
+                    'razon_social': f"Promotor {username.capitalize()}",
+                    'nit_rfc': f"NIT-{username.upper()}-123",
+                    'banco_nombre': "Banco de la Nación",
+                    'cuenta_bancaria': "123-456789-00"
+                }
+            )
+            if created:
+                self.stdout.write(self.style.SUCCESS(
+                    f"  -> Perfil de Promotor '{promotor.razon_social}' creado para '{username}'."
                 ))
 
     def handle(self, *args, **kwargs):
         User = get_user_model()
 
-        # ─── 1. SUPERUSUARIO ADMIN ───
-        self.stdout.write(self.style.HTTP_INFO('\n══════ CREANDO SUPERUSUARIO ══════'))
+        # --- 1. SUPERUSUARIO ADMIN ---
+        self.stdout.write(self.style.HTTP_INFO('\n====== CREANDO SUPERUSUARIO ======'))
         admin_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
         admin_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@misterticket.com')
         admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin123')
         self._create_or_update_superuser(User, admin_username, admin_email, admin_password)
 
-        # ─── 2. USUARIOS DE PRUEBA CON ROLES ───
-        self.stdout.write(self.style.HTTP_INFO('\n══════ CREANDO USUARIOS DE PRUEBA ══════'))
+        # --- 2. USUARIOS DE PRUEBA CON ROLES ---
+        self.stdout.write(self.style.HTTP_INFO('\n====== CREANDO USUARIOS DE PRUEBA ======'))
 
         usuarios_prueba = [
             # (username, email, password, rol)
@@ -105,13 +120,15 @@ class Command(BaseCommand):
             ('artista2', 'artista2@misterticket.com', 'artista12345', 'artista'),
             ('verificador1', 'verificador1@misterticket.com', 'verificador12345', 'verificador'),
             ('verificador2', 'verificador2@misterticket.com', 'verificador12345', 'verificador'),
+            ('promotor1', 'promotor1@misterticket.com', 'promotor123', 'promotor'),
+            ('promotor2', 'promotor2@misterticket.com', 'promotor123', 'promotor'),
         ]
 
         for username, email, password, role in usuarios_prueba:
             self._stdout_separator()
             self._create_user_with_role(User, username, email, password, role)
 
-        self.stdout.write(self.style.HTTP_INFO('\n══════ SEED COMPLETADO ══════\n'))
+        self.stdout.write(self.style.HTTP_INFO('\n====== SEED COMPLETADO ======\n'))
 
     def _stdout_separator(self):
-        self.stdout.write('─' * 40)
+        self.stdout.write('-' * 40)

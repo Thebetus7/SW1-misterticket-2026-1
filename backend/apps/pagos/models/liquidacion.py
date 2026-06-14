@@ -15,9 +15,9 @@ class Liquidacion(SoftDeleteModel):
         max_digits=12, decimal_places=2,
         verbose_name='Monto comisión plataforma'
     )
-    monto_pago_organizador = models.DecimalField(
+    monto_pago_promotor = models.DecimalField(
         max_digits=12, decimal_places=2,
-        verbose_name='Monto pago al organizador'
+        verbose_name='Monto pago al promotor'
     )
     referencia_bancaria = models.CharField(
         max_length=255, blank=True, null=True,
