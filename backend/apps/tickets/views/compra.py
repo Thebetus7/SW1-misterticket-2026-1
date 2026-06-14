@@ -30,56 +30,62 @@ class CompraView(APIView):
 
         monto_total = zona.precio * cantidad
 
-        # Configurar Stripe
-        stripe.api_key = settings.STRIPE_SECRET_KEY
-        if not stripe.api_key:
-            return Response(
-                {"detail": "La pasarela de pagos no está configurada (STRIPE_SECRET_KEY faltante)."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # Si es compra directa para desarrollo, simular éxito en Stripe
+        if payment_method_id == "pm_desarrollo_directo":
+            intent_id = f"pi_dev_{uuid.uuid4().hex[:12].upper()}"
+        else:
+            # Configurar Stripe
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            if not stripe.api_key:
+                return Response(
+                    {"detail": "La pasarela de pagos no está configurada (STRIPE_SECRET_KEY faltante)."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
-        # 1. Crear y confirmar el PaymentIntent en Stripe
-        try:
-            intent = stripe.PaymentIntent.create(
-                amount=int(monto_total * 100),  # Stripe recibe centavos
-                currency='bob',  # Bolivianos
-                payment_method=payment_method_id,
-                confirm=True,
-                automatic_payment_methods={
-                    'enabled': True,
-                    'allow_redirects': 'never',
-                }
-            )
-        except stripe.CardError as e:
-            return Response(
-                {"detail": f"Error de tarjeta: {e.user_message or str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except stripe.StripeError as e:
-            return Response(
-                {"detail": f"Error en la pasarela de pagos: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return Response(
-                {"detail": f"Error inesperado al procesar el pago: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            # 1. Crear y confirmar el PaymentIntent en Stripe
+            try:
+                intent = stripe.PaymentIntent.create(
+                    amount=int(monto_total * 100),  # Stripe recibe centavos
+                    currency='bob',  # Bolivianos
+                    payment_method=payment_method_id,
+                    confirm=True,
+                    automatic_payment_methods={
+                        'enabled': True,
+                        'allow_redirects': 'never',
+                    }
+                )
+            except stripe.CardError as e:
+                return Response(
+                    {"detail": f"Error de tarjeta: {e.user_message or str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except stripe.StripeError as e:
+                return Response(
+                    {"detail": f"Error en la pasarela de pagos: {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except Exception as e:
+                return Response(
+                    {"detail": f"Error inesperado al procesar el pago: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
-        # Verificar que el pago se haya completado con éxito
-        if intent.status != 'succeeded':
-            return Response(
-                {"detail": f"El pago no pudo completarse. Estado: {intent.status}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            # Verificar que el pago se haya completado con éxito
+            if intent.status != 'succeeded':
+                return Response(
+                    {"detail": f"El pago no pudo completarse. Estado: {intent.status}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            intent_id = intent.id
 
         # 2. Registrar la Factura
         factura = Factura.objects.create(
             precio=monto_total,
             estado_pago='pagado',
             cliente=request.user,
-            stripe_payment_intent_id=intent.id
+            stripe_payment_intent_id=intent_id
         )
+
 
         tickets_creados = []
 
