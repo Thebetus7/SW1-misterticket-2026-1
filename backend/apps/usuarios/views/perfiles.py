@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from core.mixins import SoftDeleteMixin
-
-from ..models import Artista, Promotor, Verificador, Vendedor
+from ..models import Artista, Promotor, Verificador, Vendedor, SeguidorPromotor
 from ..serializers import ArtistaSerializer, PromotorSerializer, VerificadorSerializer, VendedorSerializer, VendedorCrearSerializer
 
 
@@ -34,6 +34,35 @@ class PromotorViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     queryset = Promotor.objects.all()
     serializer_class = PromotorSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['post'], url_path='seguir')
+    def seguir(self, request, pk=None):
+        """
+        POST /api/usuarios/promotores/{id}/seguir/
+        Alterna (toggle) el seguimiento del promotor especificado por id.
+        """
+        promotor = self.get_object()
+        usuario = request.user
+        
+        # Comprobar si ya lo sigue
+        seguimiento = SeguidorPromotor.objects.filter(usuario=usuario, promotor=promotor)
+        if seguimiento.exists():
+            seguimiento.delete()
+            siguiendo = False
+        else:
+            SeguidorPromotor.objects.create(usuario=usuario, promotor=promotor)
+            siguiendo = True
+            
+        return Response({'siguiendo': siguiendo}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='siguiendo')
+    def siguiendo(self, request):
+        """
+        GET /api/usuarios/promotores/siguiendo/
+        Devuelve la lista de IDs de promotores que el usuario autenticado sigue.
+        """
+        ids = list(SeguidorPromotor.objects.filter(usuario=request.user).values_list('promotor_id', flat=True))
+        return Response({'promotores_seguidos': ids}, status=status.HTTP_200_OK)
 
 
 class VerificadorViewSet(SoftDeleteMixin, viewsets.ModelViewSet):

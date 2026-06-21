@@ -1,6 +1,29 @@
 from rest_framework import serializers
-from ..models import Evento
+from ..models import Evento, Zona, Asiento, PresentacionEvento
 from .zona_asiento import ZonaSerializer
+
+
+# --- SERIALIZERS DE SOPORTE PARA ELENCO Y PRESENTACIONES ---
+
+class ArtistaFeedSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nombre_artistico = serializers.CharField()
+    biografia = serializers.CharField()
+    foto_url = serializers.CharField()
+    departamento_origen_nombre = serializers.CharField(source='departamento_origen.nombre', default=None, read_only=True)
+    popularidad = serializers.IntegerField()
+    generos_musicales_nombres = serializers.SerializerMethodField()
+
+    def get_generos_musicales_nombres(self, obj):
+        return [g.nombre for g in obj.generos_musicales.all()]
+
+
+class PresentacionFeedSerializer(serializers.ModelSerializer):
+    artista = ArtistaFeedSerializer(read_only=True)
+
+    class Meta:
+        model = PresentacionEvento
+        fields = ('id', 'artista', 'orden_aparicion', 'tiempo_inicio')
 
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -9,6 +32,7 @@ class EventoSerializer(serializers.ModelSerializer):
         source='promotor.razon_social', read_only=True
     )
     zonas = ZonaSerializer(many=True, read_only=True)
+    presentaciones = PresentacionFeedSerializer(many=True, read_only=True)
 
     class Meta:
         model = Evento
@@ -17,6 +41,7 @@ class EventoSerializer(serializers.ModelSerializer):
             'lugar', 'lugar_nombre',
             'promotor', 'promotor_razon',
             'zonas',
+            'presentaciones',
             'fecha_inicio', 'fecha_fin',
             'created_at', 'updated_at',
         )
@@ -53,28 +78,6 @@ class EventoCrearSerializer(serializers.ModelSerializer):
 
 
 # --- SERIALIZERS PARA EL FEED (MÓVIL) ---
-from ..models import PresentacionEvento
-
-class ArtistaFeedSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    nombre_artistico = serializers.CharField()
-    biografia = serializers.CharField()
-    foto_url = serializers.CharField()
-    departamento_origen_nombre = serializers.CharField(source='departamento_origen.nombre', default=None, read_only=True)
-    popularidad = serializers.IntegerField()
-    generos_musicales_nombres = serializers.SerializerMethodField()
-
-    def get_generos_musicales_nombres(self, obj):
-        return [g.nombre for g in obj.generos_musicales.all()]
-
-
-class PresentacionFeedSerializer(serializers.ModelSerializer):
-    artista = ArtistaFeedSerializer(read_only=True)
-
-    class Meta:
-        model = PresentacionEvento
-        fields = ('id', 'artista', 'orden_aparicion', 'tiempo_inicio')
-
 
 class EventoFeedSerializer(serializers.ModelSerializer):
     lugar_nombre = serializers.CharField(source='lugar.nombre', read_only=True)

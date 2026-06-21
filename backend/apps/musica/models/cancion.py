@@ -25,6 +25,11 @@ class Cancion(SoftDeleteModel):
         related_name='canciones',
         verbose_name='Artista'
     )
+    publicado = models.BooleanField(
+        default=False,
+        verbose_name='Publicado',
+        help_text='Indica si la canción es pública para los fans'
+    )
     
     # Atributos de audio extraídos automáticamente
     duracion = models.FloatField(null=True, blank=True, verbose_name='Duración (segundos)')

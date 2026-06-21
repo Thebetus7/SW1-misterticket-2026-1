@@ -165,6 +165,7 @@ class PerfilSerializer(serializers.ModelSerializer):
             # Artista
             'nombre_artistico', 'biografia',
             'nombre_artistico_update', 'biografia_update',
+            'recibir_notificaciones',
             'created_at', 'updated_at',
         )
         read_only_fields = ('id', 'username', 'created_at', 'updated_at', 'roles')

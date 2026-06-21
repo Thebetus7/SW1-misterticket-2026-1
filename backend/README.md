@@ -72,3 +72,23 @@ A diferencia de Laravel donde sueles crear una nueva migración para añadir un 
 
 > [!IMPORTANT]
 > **¿Cuándo borrar todo?** Solo hazlo en desarrollo si las migraciones entran en conflicto y no puedes resolverlo. En producción, **NUNCA** borres los archivos de migración ni la base de datos; siempre usa el flujo normal de `makemigrations` y `migrate`.
+
+---
+
+## 💳 Configuración de Stripe (Pasarela de Pagos)
+
+El proyecto utiliza **Stripe** para procesar los pagos de la compra de boletos.
+
+1. **Instalación de la dependencia:**
+   La dependencia ya está incluida en `requirements.txt`. Si no la tienes instalada en tu entorno virtual, ejecútala con:
+   ```bash
+   pip install stripe
+   ```
+
+2. **Variables de Entorno necesarias:**
+   Asegúrate de configurar las siguientes variables en tu archivo `.env` en la raíz de `backend/`:
+   ```env
+   STRIPE_PUBLIC_KEY=tu_clave_publica_de_stripe
+   STRIPE_SECRET_KEY=tu_clave_secreta_de_stripe
+   STRIPE_WEBHOOK_SECRET=tu_webhook_secret_de_stripe (opcional para desarrollo local)
+   ```

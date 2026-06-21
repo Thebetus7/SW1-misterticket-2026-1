@@ -32,6 +32,12 @@ class Usuario(AbstractUser, SoftDeleteModel):
         help_text='Avatar del usuario. Se guarda en media/usuarios/fotos/ o en MinIO/S3.'
     )
 
+    recibir_notificaciones = models.BooleanField(
+        default=True,
+        verbose_name='Recibir notificaciones',
+        help_text='Permite habilitar o deshabilitar la recepción de notificaciones en el sistema.'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

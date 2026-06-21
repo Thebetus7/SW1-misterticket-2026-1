@@ -153,7 +153,7 @@ class EventoViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
         ).prefetch_related(
             'presentaciones__artista__generos_musicales',
             'presentaciones__artista__departamento_origen'
-        ).order_by('-fecha_inicio')
+        ).order_by('-updated_at')
         
         serializer = EventoFeedSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

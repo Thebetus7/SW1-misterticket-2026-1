@@ -113,7 +113,8 @@ class CompraView(APIView):
                     estado='activo',
                     asiento=asiento,
                     zona=zona,
-                    factura=factura
+                    factura=factura,
+                    propietario=request.user,
                 )
                 tickets_creados.append(ticket)
         else:
@@ -124,7 +125,8 @@ class CompraView(APIView):
                     estado='activo',
                     asiento=None,
                     zona=zona,
-                    factura=factura
+                    factura=factura,
+                    propietario=request.user,
                 )
                 tickets_creados.append(ticket)
 

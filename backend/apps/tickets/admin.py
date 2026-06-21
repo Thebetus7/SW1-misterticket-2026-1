@@ -11,6 +11,6 @@ class FacturaAdmin(admin.ModelAdmin):
 
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ('id', 'codigo_qr', 'estado', 'zona', 'asiento', 'factura', 'is_deleted')
-    search_fields = ('codigo_qr',)
-    list_filter = ('estado', 'deleted_at')
+    list_display = ('id', 'codigo_qr', 'estado', 'propietario', 'transferido', 'zona', 'asiento', 'factura', 'is_deleted')
+    search_fields = ('codigo_qr', 'propietario__username')
+    list_filter = ('estado', 'transferido', 'deleted_at')

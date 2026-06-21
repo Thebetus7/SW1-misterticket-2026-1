@@ -11,7 +11,7 @@ class CancionSerializer(serializers.ModelSerializer):
         model = Cancion
         fields = (
             'id', 'nombre', 'detalle', 'archivo', 'archivo_url',
-            'artista', 'artista_nombre',
+            'artista', 'artista_nombre', 'publicado',
             'duracion', 'duracion_formateada',
             'tamano', 'tamano_formateado',
             'formato',

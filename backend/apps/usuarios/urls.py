@@ -6,6 +6,7 @@ from .views import (
     LoginView, RegistroView, PerfilView,
     PersonaViewSet, UsuarioViewSet,
     ArtistaViewSet, PromotorViewSet, VerificadorViewSet, VendedorViewSet,
+    NotificacionViewSet, DispositivoViewSet, AmistadViewSet,
 )
 
 # Router genera automáticamente todas las rutas CRUD
@@ -16,6 +17,9 @@ router.register(r'artistas', ArtistaViewSet, basename='artista')
 router.register(r'promotores', PromotorViewSet, basename='promotor')
 router.register(r'verificadores', VerificadorViewSet, basename='verificador')
 router.register(r'vendedores', VendedorViewSet, basename='vendedor')
+router.register(r'notificaciones', NotificacionViewSet, basename='notificacion')
+router.register(r'dispositivos', DispositivoViewSet, basename='dispositivo')
+router.register(r'amistades', AmistadViewSet, basename='amistad')
 
 urlpatterns = [
     # Auth

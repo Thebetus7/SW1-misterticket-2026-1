@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 from django.contrib.auth import get_user_model
 from core.mixins import SoftDeleteMixin
 
@@ -22,6 +23,8 @@ class UsuarioViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
     """
     queryset = Usuario.objects.all()
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['username', 'email']
 
     def get_serializer_class(self):
         """Usa serializer de registro para crear y de lectura para el resto."""
@@ -53,3 +56,20 @@ class UsuarioViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
             return Response({'detail': f'Rol "{rol_nombre}" asignado correctamente.'})
         except Group.DoesNotExist:
             return Response({'error': f'El rol "{rol_nombre}" no existe.'}, status=404)
+
+    @action(detail=False, methods=['get'], url_path='fans')
+    def fans(self, request):
+        """
+        GET /api/usuarios/lista/fans/
+        Lista todos los usuarios con rol fan (excluye al usuario autenticado).
+        Para transferencia rápida en demo/examen.
+        """
+        fans = Usuario.objects.filter(
+            groups__name='fan',
+            is_active=True,
+        ).exclude(
+            id=request.user.id
+        ).distinct().order_by('username')
+
+        data = [{'id': u.id, 'username': u.username} for u in fans]
+        return Response(data, status=status.HTTP_200_OK)

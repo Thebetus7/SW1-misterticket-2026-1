@@ -1,6 +1,9 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from usuarios.models import SoftDeleteModel
 from .factura import Factura
+
+Usuario = get_user_model()
 
 
 class Ticket(SoftDeleteModel):
@@ -37,6 +40,20 @@ class Ticket(SoftDeleteModel):
         on_delete=models.PROTECT,
         related_name='tickets',
         verbose_name='Factura'
+    )
+    propietario = models.ForeignKey(
+        Usuario,
+        on_delete=models.PROTECT,
+        related_name='tickets_propios',
+        null=True,
+        blank=True,
+        verbose_name='Propietario actual',
+        help_text='Usuario que posee actualmente el ticket (puede diferir del comprador tras transferencia)',
+    )
+    transferido = models.BooleanField(
+        default=False,
+        verbose_name='Ya transferido',
+        help_text='Solo se permite una transferencia por ticket',
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

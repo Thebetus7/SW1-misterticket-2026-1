@@ -20,6 +20,12 @@ class CancionViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        artista_id = self.request.query_params.get('artista_id')
+
+        if artista_id:
+            # Permite a los fans obtener las canciones públicas de un artista específico
+            return Cancion.objects.filter(artista_id=artista_id, publicado=True)
+
         # Si el usuario no tiene perfil de artista asignado, no puede ver ni subir nada
         if not hasattr(user, 'perfil_artista') or user.perfil_artista is None:
             return Cancion.objects.none()

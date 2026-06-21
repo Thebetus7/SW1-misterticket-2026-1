@@ -128,6 +128,48 @@ export default function LoginPage() {
               {loading ? 'Verificando...' : 'Iniciar Sesión'}
             </button>
           </form>
+
+          {/* Botones de pruebas rápidas (Auto-completar y Login) */}
+          <div className="mt-6 pt-4 border-t border-brand-100">
+            <p className="text-xs font-semibold text-brand-500 uppercase tracking-wider text-center mb-3">Acceso Rápido (Pruebas)</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setUsername('admin');
+                  setPassword('admin123');
+                }}
+                className="flex flex-col items-center justify-center p-2 rounded-lg border border-brand-200 bg-brand-50/50 hover:bg-brand-50 hover:border-brand-300 transition text-left"
+              >
+                <span className="text-xs font-bold text-brand-800">Superusuario</span>
+                <span className="text-[10px] text-brand-500">admin / admin123</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setUsername('promotor1');
+                  setPassword('promotor123');
+                }}
+                className="flex flex-col items-center justify-center p-2 rounded-lg border border-brand-200 bg-brand-50/50 hover:bg-brand-50 hover:border-brand-300 transition text-left"
+              >
+                <span className="text-xs font-bold text-brand-800">Promotor 1</span>
+                <span className="text-[10px] text-brand-500">promotor1 / promotor123</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUsername('promotor2');
+                  setPassword('promotor123');
+                }}
+                className="flex flex-col items-center justify-center p-2 rounded-lg border border-brand-200 bg-brand-50/50 hover:bg-brand-50 hover:border-brand-300 transition text-left"
+              >
+                <span className="text-xs font-bold text-brand-800">Promotor 1</span>
+                <span className="text-[10px] text-brand-500">promotor1 / promotor123</span>
+              </button>
+            </div>
+          </div>
+
         </div>
         
         <div className="text-center mt-6">
