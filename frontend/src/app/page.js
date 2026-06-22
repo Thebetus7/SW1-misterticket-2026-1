@@ -1,7 +1,35 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { Ticket, Users, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = Cookies.get('access_token');
+    const userString = Cookies.get('user');
+
+    if (token && userString) {
+      try {
+        const user = JSON.parse(userString);
+        const roles = user.roles || [];
+        const isAdmin = roles.includes('admin') || user.is_superuser;
+        
+        if (isAdmin) {
+          router.replace('/dashboard');
+        } else if (roles.includes('promotor')) {
+          router.replace('/eventos');
+        }
+        // Si es un usuario normal/fan, se queda en el Home por ahora,
+        // ya que /eventos está protegido solo para admin/promotor.
+      } catch (e) {}
+    }
+  }, [router]);
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-b from-brand-50 to-brand-100">
       <div className="text-center max-w-3xl space-y-8 animate-fade-in-up">
@@ -42,9 +70,9 @@ export default function Home() {
           <Link href="/login" className="btn-primary flex items-center gap-2 text-lg">
             Ingresar a mi cuenta
           </Link>
-          <a href="#" className="px-6 py-2 rounded-lg font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-200 transition-colors">
-            Ver Eventos
-          </a>
+          <Link href="/register" className="px-6 py-2 rounded-lg font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-200 transition-colors">
+            Crear cuenta nueva
+          </Link>
         </div>
       </div>
     </main>

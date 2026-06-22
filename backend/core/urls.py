@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/eventos/', include('eventos.urls')),
     path('api/tickets/', include('tickets.urls')),
     path('api/pagos/', include('pagos.urls')),
+    path('api/musica/', include('musica.urls')),
 ]
 
 # Servir archivos media en desarrollo (fotos de artistas, etc.)

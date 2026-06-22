@@ -1,105 +1,60 @@
 # MisterTicket
 
-MisterTicket es una plataforma estilo red social para conciertos, enfocada principalmente en la venta de boletos con el objetivo de prevenir el fraude y estandarizar el uso de billeteras móviles.
-
-## Arquitectura
-Este proyecto está dividido en dos partes principales:
-1. **Backend**: API REST creada con Django y Django Rest Framework (DRF), utilizando Simple JWT para autenticación segura mediante tokens. Implementa un sistema de gestión de usuarios y roles similar a *Spatie* en *Laravel* a través del sistema de permisos integrado de Django (o django-role-permissions).
-2. **Frontend**: Aplicación en Next.js (App Router), enfocada en un diseño asombroso y seguro, consumiendo la API de Django pasando las credenciales autorizadas en los headers de Fetch.
-
-## Cómo Iniciar (Guía Rápida)
-La forma más fácil de iniciar todo el proyecto (si tienes Docker instalado) es ejecutar:
-```bash
-docker-compose up --build
-```
-Si prefieres inicializar y probar localmente, sigue las siguientes guías paso a paso.
+Plataforma premium para la gestión y venta segura de boletos de conciertos con prevención de fraudes.
 
 ---
 
-## 1. Configuración del Backend (Django)
+## 🚀 Cómo Levantar el Proyecto
 
-### Creación del Entorno
-Ve al directorio del backend:
-```bash
-cd backend
-```
-Crea un entorno virtual e instala las dependencias (asegúrate de tener Python 3 instalado):
-```bash
-python -m venv venv
-.\venv\Scripts\activate
-# En Mac/Linux: source venv/bin/activate
-pip install -r requirements.txt
-pip install psycopg2-binary # Vital para la conexión con PostgreSQL
-```
+Para evitar errores de conexión (`Failed to fetch`), se recomienda utilizar **terminales separadas** para cada servicio.
 
-### Comandos Clave en Django
-Para levantar el proyecto y crear las tablas de base de datos base y usuarios, corre lo siguiente por primera vez.
+### 1. Servidor Backend (Django)
 
-1. **Migraciones:**
-```bash
-python manage.py makemigrations
-python manage.py makemigrations usuarios    # para generar las tablas de usuario/roles
-python manage.py makemigrations productos   # para generar el módulo base
-python manage.py migrate
-```
+1. Ve al directorio del backend:
+   ```bash
+   cd backend
+   ```
+2. Activa tu entorno virtual (si aplica):
+   ```bash
+   .\venv\Scripts\activate
+   ```
+3. Ejecuta las migraciones (solo si hay cambios de base de datos):
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+4. **Poblar la base de datos (Semillas / Seeds):**
+   *Ejecuta estos comandos en orden si estás reiniciando el sistema:*
+   ```bash
+   python manage.py seed_admin
+   python manage.py seed_departamentos_lugares
+   ```
+5. **Iniciar el servidor de desarrollo:**
+   ```bash
+   python manage.py runserver 0.0.0.0:8000
+   ```
 
-2. **Crear usuario administrador:**
-```bash
-python manage.py createsuperuser
-```
+### 2. Servidor Frontend (Next.js)
 
-3. **Arrancar el servidor de desarrollo:**
-```bash
-python manage.py runserver
-```
-El backend estará disponible en `http://localhost:8000` o `http://127.0.0.1:8000`.
-
-### Autenticación y Roles (Estilo Laravel Sanctum / Spatie)
-- Utilizamos **Simple JWT**: Similar a Sanctum para SPAs. Provee temporalidad, seguridad y fácil anexo a Next.js (enviando el `Bearer Token`).
-- En Django, se utiliza su propio motor de grupos y permisos que actúa casi igual que *Spatie* en Laravel. 
-  - Para asignar el rol: Al grupo se le asignan los permisos, y al usuario se le asigna el grupo correspondiente.
-  - En `backend/apps/usuarios/`, encontrarás la implementación.
+1. Ve al directorio del frontend:
+   ```bash
+   cd frontend
+   ```
+2. Inicia el servidor Next.js en modo desarrollo:
+   ```bash
+   npm run dev
+   ```
+3. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 ---
 
-## 2. Configuración del Frontend (Next.js)
+## 📌 Nota de Contexto e Importancia de los Comandos
 
-### Instrucciones y Creación
-Ve al directorio del frontend:
-```bash
-cd frontend
-```
-Instala los paquetes de `package.json` utilizando npm:
-```bash
-npm install
-```
-
-### Ejecutar el Servidor
-Inicia la versión de desarrollo de Next.js:
-```bash
-npm run dev
-```
-La aplicación correrá en `http://localhost:3000`.
-
-### Estructura y Funcionamiento con el Backend
-- **App Router:** `src/app/`. Aquí residen las páginas (login, dashboard, productos).
-- **Componentes:** `src/components/`. Todo bloque visual re-utilizable va aquí.
-- **Llamadas API (`src/lib/api.js`):** Next.js tiene configurada la Fetch API genérica para automáticamente leer el token de las cookies (si existe) y ponerlo en el header de las peticiones protegidas.
-- Cuando inicies sesión en la página `/login`, recibirás un  `access_token` de Django y Next lo guardará en las cookies.
-- Al acceder al `/dashboard` o `/productos`, se valida el token localmente y hacia al servidor si se requieren datos.
-
----
-
-## Comandos Generados y Útiles
-
-### Django
-- `django-admin startproject core .`: Inicializó el proyecto dentro de backend.
-- `python manage.py startapp <nombre_app>`: Crea nuevas apps como usuarios o productos.
-- `python manage.py shell`: Abre consola interactiva de la base de datos de Django para consultas rápidas.
-
-### Next.js
-- `npx create-next-app@latest .`: Comando originario para estructurar Next.js.
-- `npm run build`: Compila para producción.
-- `npm run start`: Arranca el servidor de producción (necesitas hacer build primero).
-
-El proyecto continuará expandiéndose aquí. ¡Bienvenido a MisterTicket!
+> [!IMPORTANT]
+> **¿Por qué usamos `python manage.py runserver 0.0.0.0:8000`?**
+>
+> 1. **Acceso Multi-dispositivo (Flutter / Móvil):** Al usar `0.0.0.0` en lugar del valor por defecto `127.0.0.1`, el servidor de Django escucha en **todas las interfaces de red de tu computadora**. Esto es indispensable para que tu aplicación móvil de Flutter en desarrollo pueda conectarse a la API del backend usando la IP de tu red local.
+> 2. **Evitar el error "Failed to fetch":** 
+>    * Al ejecutar comandos administrativos como `seed_admin` o `seed_departamentos_lugares`, debes hacerlo deteniendo temporalmente el servidor o abriendo una **segunda terminal**.
+>    * Si detienes el servidor para correr una semilla y olvidas volver a iniciarlo con `runserver`, el frontend de Next.js no podrá comunicarse con el backend, lanzando inmediatamente el error de consola `TypeError: Failed to fetch` (conexión rechazada).
+>    * **Recomendación:** Deja siempre una consola ejecutando permanentemente el comando `runserver 0.0.0.0:8000` y abre otra consola adicional para correr migraciones, semillas o cualquier otra tarea administrativa de Django.

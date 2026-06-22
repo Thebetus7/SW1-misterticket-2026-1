@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { fetchApi } from '@/lib/api';
@@ -13,6 +13,24 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const token = Cookies.get('access_token');
+    const userString = Cookies.get('user');
+
+    if (token && userString) {
+      try {
+        const user = JSON.parse(userString);
+        const roles = user.roles || [];
+        const isAdmin = roles.includes('admin') || user.is_superuser;
+        if (isAdmin) {
+          router.replace('/dashboard');
+        } else if (roles.includes('promotor')) {
+          router.replace('/eventos');
+        }
+      } catch (e) {}
+    }
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,9 +48,16 @@ export default function LoginPage() {
       
       if(data.usuario) {
         Cookies.set('user', JSON.stringify(data.usuario));
+        const roles = data.usuario.roles || [];
+        const isAdmin = roles.includes('admin') || data.usuario.is_superuser;
+        if (isAdmin) {
+          router.replace('/dashboard');
+        } else {
+          router.replace('/eventos');
+        }
+      } else {
+        router.replace('/eventos');
       }
-
-      router.push('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -103,12 +128,62 @@ export default function LoginPage() {
               {loading ? 'Verificando...' : 'Iniciar Sesión'}
             </button>
           </form>
+
+          {/* Botones de pruebas rápidas (Auto-completar y Login) */}
+          <div className="mt-6 pt-4 border-t border-brand-100">
+            <p className="text-xs font-semibold text-brand-500 uppercase tracking-wider text-center mb-3">Acceso Rápido (Pruebas)</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setUsername('admin');
+                  setPassword('admin123');
+                }}
+                className="flex flex-col items-center justify-center p-2 rounded-lg border border-brand-200 bg-brand-50/50 hover:bg-brand-50 hover:border-brand-300 transition text-left"
+              >
+                <span className="text-xs font-bold text-brand-800">Superusuario</span>
+                <span className="text-[10px] text-brand-500">admin / admin123</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setUsername('promotor1');
+                  setPassword('promotor123');
+                }}
+                className="flex flex-col items-center justify-center p-2 rounded-lg border border-brand-200 bg-brand-50/50 hover:bg-brand-50 hover:border-brand-300 transition text-left"
+              >
+                <span className="text-xs font-bold text-brand-800">Promotor 1</span>
+                <span className="text-[10px] text-brand-500">promotor1 / promotor123</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUsername('promotor2');
+                  setPassword('promotor123');
+                }}
+                className="flex flex-col items-center justify-center p-2 rounded-lg border border-brand-200 bg-brand-50/50 hover:bg-brand-50 hover:border-brand-300 transition text-left"
+              >
+                <span className="text-xs font-bold text-brand-800">Promotor 1</span>
+                <span className="text-[10px] text-brand-500">promotor1 / promotor123</span>
+              </button>
+            </div>
+          </div>
+
         </div>
         
         <div className="text-center mt-6">
-          <Link href="/" className="text-brand-500 hover:text-brand-700 text-sm font-medium transition-colors">
-            Volver al inicio
-          </Link>
+          <p className="text-brand-600 text-sm">
+            ¿No tienes una cuenta?{' '}
+            <Link href="/register" className="text-accent font-semibold hover:underline">
+              Regístrate aquí
+            </Link>
+          </p>
+          <div className="mt-4">
+            <Link href="/" className="text-brand-500 hover:text-brand-700 text-sm font-medium transition-colors">
+              Volver al inicio
+            </Link>
+          </div>
         </div>
 
       </div>

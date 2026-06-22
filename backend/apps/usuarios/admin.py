@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Persona, Artista, Organizador, Verificador
+from .models import Usuario, Persona, Artista, Promotor, Verificador
 
 
 @admin.register(Persona)
@@ -46,8 +46,8 @@ class ArtistaAdmin(admin.ModelAdmin):
     filter_horizontal = ('generos_musicales',)
 
 
-@admin.register(Organizador)
-class OrganizadorAdmin(admin.ModelAdmin):
+@admin.register(Promotor)
+class PromotorAdmin(admin.ModelAdmin):
     list_display = ('id', 'razon_social', 'nit_rfc', 'usuario', 'is_deleted')
     search_fields = ('razon_social', 'nit_rfc')
     list_filter = ('deleted_at',)
@@ -55,6 +55,6 @@ class OrganizadorAdmin(admin.ModelAdmin):
 
 @admin.register(Verificador)
 class VerificadorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'usuario', 'pago', 'estado', 'is_deleted')
-    search_fields = ('usuario__username',)
+    list_display = ('id', 'usuario', 'promotor', 'pago', 'estado', 'is_deleted')
+    search_fields = ('usuario__username', 'promotor__razon_social')
     list_filter = ('estado', 'deleted_at')

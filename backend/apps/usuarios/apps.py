@@ -44,10 +44,11 @@ def crear_roles_y_permisos(sender, **kwargs):
         from usuarios.models import Usuario
         ct = ContentType.objects.get_for_model(Usuario)
 
-        # ─── CREAR LOS 3 ROLES (Groups) ───
-        rol_organizador, _ = Group.objects.get_or_create(name='organizador')
+        # ─── CREAR LOS 4 ROLES (Groups) ───
+        rol_promotor, _ = Group.objects.get_or_create(name='promotor')
         rol_verificador, _ = Group.objects.get_or_create(name='verificador')
         rol_artista, _ = Group.objects.get_or_create(name='artista')
+        rol_fan, _ = Group.objects.get_or_create(name='fan')
 
         # ─── OBTENER LOS 4 PERMISOS CUSTOM ───
         # Estos permisos se definen en Meta.permissions del modelo Usuario
@@ -63,8 +64,8 @@ def crear_roles_y_permisos(sender, **kwargs):
                 return
 
         # ─── ASIGNAR PERMISOS A CADA ROL ───
-        # Organizador: puede gestionar eventos y ver reportes
-        rol_organizador.permissions.set([
+        # Promotor: puede gestionar eventos y ver reportes
+        rol_promotor.permissions.set([
             permisos['gestionar_eventos'],
             permisos['ver_reportes'],
         ])
@@ -80,8 +81,8 @@ def crear_roles_y_permisos(sender, **kwargs):
             permisos['ver_reportes'],
         ])
 
-        print("✅ Roles y permisos creados/actualizados correctamente.")
+        print("[OK] Roles y permisos creados/actualizados correctamente.")
 
     except Exception as e:
         # En la primera migración puede que los modelos aún no existan
-        print(f"⚠️  No se pudieron crear roles/permisos (normal en primera migración): {e}")
+        print(f"[WARNING] No se pudieron crear roles/permisos (normal en primera migración): {e}")

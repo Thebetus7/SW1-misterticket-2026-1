@@ -32,7 +32,7 @@ Los botones deben ser "Touch-friendly" en mobile:
   - En **Desktop**, los botones de acción principal (como "Comprar") pueden ir a la derecha o integrados en cards.
   - En **Mobile**, usar **Botones de Ancho Completo** (`w-full`) para acciones críticas y considerar **Sticky Buttons** en la parte inferior de la pantalla para transacciones.
 
-### 📦 Cards de Tickets/Productos
+### 📦 Cards de Tickets
 - **Desktop**: Grid de 3 o 4 columnas (`grid-cols-4`).
 - **Tablet**: Grid de 2 columnas (`grid-cols-2`).
 - **Mobile**: 1 sola columna (`grid-cols-1`). Las imágenes deben ocupar el 100% del ancho para impacto visual.

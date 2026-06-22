@@ -28,12 +28,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'storages',
 
     # Local apps
     'usuarios',
     'eventos',
     'tickets',
     'pagos',
+    'musica',
 ]
 
 MIDDLEWARE = [
@@ -95,12 +97,62 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================================================
-# MEDIA FILES - Para subida de archivos (fotos de artistas, etc.)
+# STORAGE — MinIO (local) / AWS S3 (producción)
+# Controla con la variable USE_S3 en el archivo .env
 # =============================================================================
-# MEDIA_URL: URL pública para acceder a los archivos subidos
-MEDIA_URL = '/media/'
-# MEDIA_ROOT: Directorio en el servidor donde se guardan los archivos
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+USE_S3 = os.getenv('USE_S3', 'False') == 'True'
+
+if USE_S3:
+    # Credenciales y configuración del bucket
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'misterticket')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
+
+    # Para MinIO local — se omite en producción con AWS S3 real
+    AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', '')
+
+    # MinIO no soporta ACLs por defecto, así que no establecemos ACL
+    # Si usas AWS S3 en producción, descomenta la siguiente línea:
+    # AWS_DEFAULT_ACL = 'public-read'
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_FILE_OVERWRITE = False
+
+    # Desactivar SSL si el endpoint es http:// (MinIO local)
+    if AWS_S3_ENDPOINT_URL and AWS_S3_ENDPOINT_URL.startswith('http://'):
+        AWS_S3_USE_SSL = False
+        AWS_S3_URL_PROTOCOL = 'http:'
+    else:
+        AWS_S3_USE_SSL = True
+        AWS_S3_URL_PROTOCOL = 'https:'
+
+    # URL pública de los archivos
+    if AWS_S3_ENDPOINT_URL:
+        # MinIO: la URL pública usa el endpoint local
+        AWS_S3_CUSTOM_DOMAIN = f'{AWS_S3_ENDPOINT_URL.replace("http://", "").replace("https://", "")}/{AWS_STORAGE_BUCKET_NAME}'
+        MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
+    else:
+        # AWS S3 real en producción
+        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+        MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+
+    # Backend de almacenamiento: S3
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+
+    print(f'[STORAGE] >> Usando MinIO/S3 -> Bucket: {AWS_STORAGE_BUCKET_NAME} | Endpoint: {AWS_S3_ENDPOINT_URL}')
+else:
+    # Almacenamiento local (comportamiento por defecto)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    print(f'[STORAGE] >> Usando almacenamiento LOCAL -> {MEDIA_ROOT}')
 
 # Rest Framework settings
 REST_FRAMEWORK = {
@@ -122,3 +174,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True  # Cambiar en producción a la URL de tu Next.js
+
+# Stripe Configuration (Modo Test / Académico)
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+
