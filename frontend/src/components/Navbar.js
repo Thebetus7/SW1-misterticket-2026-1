@@ -75,13 +75,13 @@ export default function Navbar() {
                 )}
                 {(isAdmin || isPromotor) && (
                   <Link 
-                    href="/vendedores" 
+                    href="/verificadores" 
                     className={`flex items-center gap-1.5 font-medium transition-colors ${
-                      pathname === '/vendedores' ? 'text-accent border-b-2 border-accent py-5' : 'text-brand-600 hover:text-accent'
+                      pathname === '/verificadores' ? 'text-accent border-b-2 border-accent py-5' : 'text-brand-600 hover:text-accent'
                     }`}
                   >
                     <Users className="w-4 h-4" />
-                    Vendedores
+                    Verificadores
                   </Link>
                 )}
               </div>

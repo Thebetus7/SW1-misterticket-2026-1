@@ -33,3 +33,23 @@ class RegistroAccesoSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
+
+
+class MisRegistroAccesoSerializer(serializers.ModelSerializer):
+    evento_nombre = serializers.SerializerMethodField()
+    ticket_codigo_qr = serializers.CharField(source='ticket.codigo_qr', read_only=True)
+    zona_nombre = serializers.CharField(source='ticket.zona.nombre', read_only=True)
+
+    class Meta:
+        model = RegistroAcceso
+        fields = (
+            'id', 'resultado', 'ticket_codigo_qr',
+            'evento_nombre', 'zona_nombre', 'created_at',
+        )
+
+    def get_evento_nombre(self, obj):
+        if obj.verificador_evento and obj.verificador_evento.evento:
+            return obj.verificador_evento.evento.nombre
+        if obj.ticket and obj.ticket.zona and obj.ticket.zona.evento:
+            return obj.ticket.zona.evento.nombre
+        return ''

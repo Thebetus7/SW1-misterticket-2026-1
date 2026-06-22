@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Persona, Artista, Promotor, Verificador, Vendedor
+from .models import Usuario, Persona, Artista, Promotor, Verificador
 
 
 @admin.register(Persona)
@@ -55,14 +55,6 @@ class PromotorAdmin(admin.ModelAdmin):
 
 @admin.register(Verificador)
 class VerificadorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'usuario', 'pago', 'estado', 'is_deleted')
-    search_fields = ('usuario__username',)
-    list_filter = ('estado', 'deleted_at')
-
-
-@admin.register(Vendedor)
-class VendedorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'usuario', 'promotor', 'estado', 'is_deleted')
+    list_display = ('id', 'usuario', 'promotor', 'pago', 'estado', 'is_deleted')
     search_fields = ('usuario__username', 'promotor__razon_social')
     list_filter = ('estado', 'deleted_at')
-

@@ -4,7 +4,6 @@ from .usuario import Usuario
 from .artista import Artista, artista_foto_upload_path
 from .promotor import Promotor
 from .verificador import Verificador
-from .vendedor import Vendedor
 from .seguidor import SeguidorPromotor
 from .amistad import Amistad
 from .notificacion import Notificacion

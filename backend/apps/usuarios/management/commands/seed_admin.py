@@ -74,14 +74,24 @@ class Command(BaseCommand):
                     f"  -> Perfil de Artista '{artista.nombre_artistico}' creado para '{username}'."
                 ))
         elif role_name == 'verificador':
-            from usuarios.models import Verificador
+            from usuarios.models import Verificador, Promotor
+            promotor_username = 'promotor2' if username == 'verificador2' else 'promotor1'
+            promotor = Promotor.objects.filter(usuario__username=promotor_username).first()
+            if not promotor:
+                self.stdout.write(self.style.ERROR(
+                    f"  [x] No se encontró {promotor_username} para asignar a '{username}'."
+                ))
+                return
             verificador, created = Verificador.objects.get_or_create(
                 usuario=user,
-                defaults={'pago': 50.00, 'estado': 'activo'}
+                defaults={'pago': 50.00, 'estado': 'activo', 'promotor': promotor}
             )
+            if created or verificador.promotor_id != promotor.id:
+                verificador.promotor = promotor
+                verificador.save(update_fields=['promotor'])
             if created:
                 self.stdout.write(self.style.SUCCESS(
-                    f"  -> Perfil de Verificador creado para '{username}' (pago: 50.00, estado: activo)."
+                    f"  -> Perfil de Verificador creado para '{username}' (promotor: {promotor.razon_social})."
                 ))
         elif role_name == 'promotor':
             from usuarios.models import Promotor
@@ -113,15 +123,14 @@ class Command(BaseCommand):
         self.stdout.write(self.style.HTTP_INFO('\n====== CREANDO USUARIOS DE PRUEBA ======'))
 
         usuarios_prueba = [
-            # (username, email, password, rol)
             ('fan1', 'fan1@misterticket.com', 'fan12345', 'fan'),
             ('fan2', 'fan2@misterticket.com', 'fan12345', 'fan'),
             ('artista1', 'artista1@misterticket.com', 'artista12345', 'artista'),
             ('artista2', 'artista2@misterticket.com', 'artista12345', 'artista'),
-            ('verificador1', 'verificador1@misterticket.com', 'verificador12345', 'verificador'),
-            ('verificador2', 'verificador2@misterticket.com', 'verificador12345', 'verificador'),
             ('promotor1', 'promotor1@misterticket.com', 'promotor123', 'promotor'),
             ('promotor2', 'promotor2@misterticket.com', 'promotor123', 'promotor'),
+            ('verificador1', 'verificador1@misterticket.com', 'verificador12345', 'verificador'),
+            ('verificador2', 'verificador2@misterticket.com', 'verificador12345', 'verificador'),
         ]
 
         for username, email, password, role in usuarios_prueba:

@@ -9,21 +9,15 @@ from django.db.models import Q
 from ..models import Ticket, TransferenciaTicket
 from ..serializers import TicketSerializer, MisTicketsSerializer
 from ..serializers.transferencia import TransferirTicketSerializer
+from ..serializers.verificar import VerificarQrSerializer
 from usuarios.models import Notificacion
+from eventos.models import VerificadorEvento, RegistroAcceso
 from .mixins import SoftDeleteMixin
 
 Usuario = get_user_model()
 
 
 class TicketViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
-    """
-    GET    /api/tickets/tickets/         → Listar (filtrable por ?factura=<id> o ?zona=<id>)
-    POST   /api/tickets/tickets/         → Crear
-    GET    /api/tickets/tickets/{id}/    → Detalle
-    PUT    /api/tickets/tickets/{id}/    → Actualizar
-    PATCH  /api/tickets/tickets/{id}/    → Actualizar parcial (ej: estado)
-    DELETE /api/tickets/tickets/{id}/    → Soft delete
-    """
     queryset = Ticket.objects.select_related('zona__evento', 'factura', 'asiento').all()
     serializer_class = TicketSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -40,24 +34,117 @@ class TicketViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
 
     @action(detail=False, url_path='mis-tickets', methods=['get'])
     def mis_tickets(self, request):
+        filtro = request.query_params.get('filtro', 'comprados')
         tickets = Ticket.objects.filter(
             Q(propietario=request.user)
             | Q(propietario__isnull=True, factura__cliente=request.user)
         ).select_related(
             'zona__evento', 'asiento'
-        ).order_by('-created_at')
+        )
 
+        if filtro == 'usados':
+            tickets = tickets.filter(estado='usado')
+        else:
+            tickets = tickets.filter(estado='activo')
+
+        tickets = tickets.order_by('-created_at')
         serializer = MisTicketsSerializer(tickets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='verificar-qr')
+    @transaction.atomic
+    def verificar_qr(self, request):
+        """
+        POST /api/tickets/tickets/verificar-qr/
+        Body: { "codigo_qr": "MT-..." }
+        """
+        serializer = VerificarQrSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        codigo_qr = serializer.validated_data['codigo_qr']
+
+        if not hasattr(request.user, 'perfil_verificador'):
+            return Response(
+                {'detail': 'Solo los verificadores pueden escanear tickets.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        verificador = request.user.perfil_verificador
+        if verificador.estado != 'activo':
+            return Response(
+                {'detail': 'Tu perfil de verificador no está activo.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            ticket = Ticket.objects.select_related(
+                'zona__evento__promotor'
+            ).get(codigo_qr=codigo_qr)
+        except Ticket.DoesNotExist:
+            return Response(
+                {'detail': 'Ticket no encontrado. Código QR inválido.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        evento = ticket.zona.evento
+        verificador_evento, _ = VerificadorEvento.objects.get_or_create(
+            evento=evento,
+            verificador=verificador,
+        )
+
+        if evento.promotor_id != verificador.promotor_id:
+            RegistroAcceso.objects.create(
+                verificador_evento=verificador_evento,
+                ticket=ticket,
+                resultado='invalido',
+            )
+            return Response(
+                {'detail': 'Este ticket no pertenece a un evento de tu promotor.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if ticket.estado == 'usado':
+            RegistroAcceso.objects.create(
+                verificador_evento=verificador_evento,
+                ticket=ticket,
+                resultado='ya_usado',
+            )
+            return Response(
+                {'detail': 'Este ticket ya fue utilizado anteriormente.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if ticket.estado != 'activo':
+            RegistroAcceso.objects.create(
+                verificador_evento=verificador_evento,
+                ticket=ticket,
+                resultado='invalido',
+            )
+            return Response(
+                {'detail': f'Ticket con estado "{ticket.estado}". No se puede validar.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ticket.estado = 'usado'
+        ticket.save(update_fields=['estado', 'updated_at'])
+
+        RegistroAcceso.objects.create(
+            verificador_evento=verificador_evento,
+            ticket=ticket,
+            resultado='aprobado',
+        )
+
+        return Response(
+            {
+                'detail': 'Ticket verificado correctamente. Acceso aprobado.',
+                'ticket': MisTicketsSerializer(ticket).data,
+                'evento_nombre': evento.nombre,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=['post'], url_path='transferir')
     @transaction.atomic
     def transferir(self, request, pk=None):
-        """
-        POST /api/tickets/tickets/{id}/transferir/
-        Transfiere un ticket a otro usuario fan. Solo se permite una transferencia por ticket.
-        Body: { "destinatario_id": <id_usuario> }
-        """
         ticket = self.get_object()
         serializer = TransferirTicketSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
@@ -125,4 +212,3 @@ class TicketViewSet(SoftDeleteMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-

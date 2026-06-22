@@ -49,7 +49,6 @@ def crear_roles_y_permisos(sender, **kwargs):
         rol_verificador, _ = Group.objects.get_or_create(name='verificador')
         rol_artista, _ = Group.objects.get_or_create(name='artista')
         rol_fan, _ = Group.objects.get_or_create(name='fan')
-        rol_vendedor, _ = Group.objects.get_or_create(name='vendedor')
 
         # ─── OBTENER LOS 4 PERMISOS CUSTOM ───
         # Estos permisos se definen en Meta.permissions del modelo Usuario
