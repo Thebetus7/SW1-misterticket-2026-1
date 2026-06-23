@@ -19,7 +19,7 @@ class Ticket(SoftDeleteModel):
     estado = models.CharField(
         max_length=50, default='activo',
         verbose_name='Estado',
-        help_text='activo, usado, cancelado, expirado'
+        help_text='reservado, activo, usado, cancelado, expirado'
     )
     asiento = models.OneToOneField(
         'eventos.Asiento',

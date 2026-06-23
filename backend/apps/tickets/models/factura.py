@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from usuarios.models import SoftDeleteModel
 
@@ -14,7 +15,7 @@ class Factura(SoftDeleteModel):
     estado_pago = models.CharField(
         max_length=50, default='pendiente',
         verbose_name='Estado del pago',
-        help_text='pendiente, pagado, reembolsado, cancelado'
+        help_text='pendiente, pagado, reembolsado, cancelado, cancelada'
     )
     cliente = models.ForeignKey(
         'usuarios.Usuario',
@@ -27,7 +28,14 @@ class Factura(SoftDeleteModel):
         verbose_name='Stripe PaymentIntent ID',
         help_text='ID del PaymentIntent de Stripe para trazabilidad'
     )
-
+    codigo_transaccion_pasarela = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name='Código de transacción pasarela',
+        help_text='UUID único enviado a Libélula como identificador de la deuda'
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

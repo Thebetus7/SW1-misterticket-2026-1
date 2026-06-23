@@ -73,11 +73,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'misterticket'),
-        'USER': os.getenv('DB_USER', 'mt_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'mt_password'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': 'prueba',
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_csKG9yDXOaB0',
+        'HOST': 'ep-shy-wind-acg84pj4.sa-east-1.aws.neon.tech',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
@@ -175,7 +178,16 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ALL_ORIGINS = True  # Cambiar en producción a la URL de tu Next.js
 
-# Stripe Configuration (Modo Test / Académico)
+# Stripe Configuration (legado — ya no se usa activamente)
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+
+# ── Libélula Payment Gateway ─────────────────────────────────────────────────
+# API key de Libélula (se envía en cada payload de registro de deuda)
+LIBELULA_API_KEY = os.getenv('LIBELULA_API_KEY', 'xOvVur3LHQx7zHknwD2YOp4gS1Rr9U1PZ')
+
+# URL base pública del backend (sin slash final).
+# Desarrollo: URL de ngrok  →  https://xxxx.ngrok.io
+# Producción: https://api.misterticket.com
+BACKEND_BASE_URL = os.getenv('BACKEND_BASE_URL', 'http://localhost:8000')
 
